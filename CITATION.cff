@@ -1,0 +1,9 @@
+cff-version: 1.0.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Bello-Palacios"
+  given-names: "Alejandro"
+  orcid: "https://orcid.org/0000-0002-0294-9485"
+title: "TH-PrePost: Pre- and post-processing Python scripts for TOUGH+HYDRATE"
+url: https://github.com/Alejobep/TH_PrePost
+date-released: 2021-11-28
