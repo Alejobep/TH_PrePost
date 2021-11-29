@@ -1,0 +1,221 @@
+
+TOUGH+                                           [v1.26, 22 October   2013]
+:::::   The TOUGH+ main program (calls all the high-level routines)
+
+Core_Memory_Allocation                           [v1.25, 30 December  2012]
+:::::   Allocate memory to most arrays based on size provided by input parameters
+
+EOS_Defaults                                     [v1.0,  29 September 2007]
+:::::   Default parameters of the hydrate equation of state
+
+EOS_Primary_Variable_List                        [v1.0,  29 September 2007]
+:::::   Determines the list of primary variables for the hydrate equation of state
+
+Write_Headings                                   [v1.5 , 05 January   2014]
+:::::   Routine for printing the headings in the standard TOUGH+ output file
+
+Open_External_IO_Files                           [v1.0,  14 January   2006]
+:::::   Open files <VERS>, <MESH>, <INCON>, <GENER>, <SAVE>, <LINEQ>, and <TABLE>
+
+CPU_Timing_Routine                               [v1.0,  10 March     2006]
+:::::   CPU time computation: Uses FORTRAN95 intrinsic timing functions
+
+Allocate_Temp_Input_Memory                       [v1.0,  21 September 2007]
+:::::   Allocate memory to to temporary input arrays
+
+Read_Main_Input_File                             [v2.0,  27 September 2013]
+:::::   Read all data provided in the main TOUGH+ input file
+
+Initializations_and_Defaults                     [v1.1,  27 September 2013]
+:::::   Initialize important parameters and variables 
+
+Read_Geologic_Media_Data                         [v1.6 , 03 September 2014]
+:::::   Read the rock type data from the <ROCK> block of the TOUGH+ input data file
+
+Read_Hydrate_Specific_Data                       [v1.5,  15 August    2014]
+:::::   Read the hydrate data from the <HYDRATE> block of the input data file
+
+Real_Gas_Setup                                   [v1.0,   8 April     2004]
+:::::   Mapping to the built-in reference parameter data set for real gas behavior
+
+PR_Interaction_Coefficients                      [v1.0,   9 April     2004]
+:::::   Setting the interaction coefficients in the Peng-Robinson EOS
+
+Read_Computational_Parameters                    [v1.1,  14 August    2009]
+:::::   Read the computational parameter data from the PARAM block of the TOUGH+ input data file
+
+Read_Element_Data                                [v1.1,  15 August    2009]
+:::::   Read the element data from the <ELEME> block of the TOUGH+ input data file
+
+Read_Connection_Data                             [v1.0,   6 January   2007]
+:::::   Read the connection data from the <CONNE> block of the TOUGH+ input data file
+
+Read_SSGroup_TimeSeries_Data                     [v1.0   18 November  2013]
+:::::   Read the data defining SSGroups to be monitored
+
+Read_Generation_Data                             [v1.0,  11 September 2007]
+:::::   Read the source/sink data from the <GENER> block of the TOUGH+ input data file
+
+Read_Initial_Conditions                          [v1.5,  08 November  2013]
+:::::   Read the initial condition data from the <INCON> block of the TOUGH+ input data file
+
+Significant_Digits                               [v1.0,  11 March     2006]
+:::::   Calculate number of significant digits for floating point arithmetic
+
+Read_External_Input_Files                        [v1.1,  17 November  2013]
+:::::   Initialize data from files <MESH> or <MINC>, <GENER> and <INCON>
+        Also initializes permeability modifiers and coordinate arrays and optionally reads tables with flowing wellbore pressures
+
+Read_Elements_From_MESH                          [v1.5,   6 July      2014]
+:::::   Read the element data from the <ELEME> block of the file <MESH>
+
+Read_Connections_From_MESH                       [v1.5,  12 June      2010]
+:::::   Read the connection data from the <CONNE> block of the file <MESH>
+
+Initialize_Perm_Modifiers                        [v1.0,   2 April     2007]
+:::::   Initialize block-by-block permeability modifiers
+
+Read_Generic_File_GENER                          [v1.0,   8 March     2007]
+:::::   Read the sink/source data from file GENER (generic)
+
+Read_Initial_Conditions_File                     [v1.5,  11 November  2013]
+:::::   Read the initial condition data directly from the file <INCON>
+
+Determine_SSGroup_Members                        [v1.0   18 November  2013]
+:::::  Determine the individual sources/sinks in each SS group
+
+Define_SSGroup_By_SSList                         [v1.0   25 September 2013]
+:::::     Define the sources/sinks in each group by a SS name list
+
+Set_Solver_Options                               [v1.0,   3 July      2006]
+:::::   Initialize parameters for the solver package, and generate informative printout
+
+Solver_Memory_Allocation                         [v1.0,  27 April     2007]
+:::::   Allocate memory to the Jacobian  and solution matrix arrays
+
+Deallocate_Unneeded_Arrays                       [v1.0,  27 April     2003]
+:::::   Deallocation of memory from all temporary and unnecessary arrays
+
+Write_More_Generic_Info                          [v1.0,  23 April     2007]
+:::::   Routine for printing additional information in the output file
+
+Write_EOS_Specific_Info                          [v1.5,  18 June      2014]
+:::::   Routine for printing additional EOS-specific information in the standard TOUGH+ output file
+
+Simulation_Cycle                                 [v1.1,  19 November  2013]
+:::::   Executive routine that performs the simulation while marching in time
+
+Equation_of_State                                [v1.0,  12 June      2006]
+:::::   Selects the appropriate version of the equation of state (for kinetic or equilibrium hydrate reaction)
+
+Hydrate_Equilibrium_Pressure                     [v1.0,   9 May       2006]
+:::::   Equilibrium CH4 hydration pressure for a given temperature
+
+Gas_Compressibility                              [v1.0,   9 April     2004]
+:::::   Computation of the compressibility factor Z and density of a real gas
+
+A_PR                                             [v1.0,   4 April     2004]
+:::::   Compute the "alfa" parameters of the Peng-Robinson EOS of real gases
+
+HUS_Departure                                    [v1.0,  11 April     2004]
+:::::   Computation of the enthalpy, internal energy and entropy departures of real gases
+
+EOS_Equilibrium                                  [v1.0,  12 June      2006]
+:::::   Selection of the appropriate state in the H2O + CH4 + Hydrate system - Equilibrium reaction
+
+Initial_State_Assignment_Eql                     [v1.5,  08 August    2014]
+:::::   Initial assignment of state and thermophysical properties in a hydrate system - Equilibrium reaction
+
+Equilibrium_Hydration                            [v1.5,  08 August    2014]
+:::::   Determine the hydration equilibrium pressure, dissolved mass/mole fractions and T-shift
+
+Henrys_Constant                                  [v2.1,  11 October   2014]
+:::::   Calculate the temperature-dependent Henry’s constant for the dissolution of a non-condensible gas in water
+
+Hydrate_Enthalpy_Density                         [v1.5,  12 April     2014]
+:::::   Density and internal energy of solid hydrate
+
+Phases3_AGH_Eql                                  [v1.5,  08 August    2014]
+:::::   Computes the secondary variables under 3-phase (Aqueous+Gas+Hydrate) conditions in a hydrate system - Equilibrium hydrate reaction
+
+H2O_Saturation_Pressure                          [v1.0, 28 October   2014]
+:::::   Determine the saturation pressure of H2O as function of temperature (scalar)
+
+Liquid_H2O_Density                               [v1.0, 18 October   2014]
+:::::   Compute the liquid H2O density using the IAPWS 97 formulation (scalar)
+
+Liquid_H2O_Specific_Enthalpy                     [v1.0, 18 October   2014]
+:::::   Compute the liquid H2O density using the IAPWS 97 formulation (scalar)
+
+Ideal_Gas_HU                                     [v1.0,  11 April     2004]
+:::::   Computation of the ideal enthalpy and internal energy of ideal gases
+
+Gas_Solution_Heat                                [v1.1,  25 January   2012]
+:::::   Heat of solution of non-condensable gas into water as a function of temperature and salt molality
+
+H2O_Fluid_Viscosity                              [v1.0, 18 October   2014]
+:::::   Compute the visocity of H2O fluids (liquid or vapor) using the IAPWS (2008) formulation (scalar)
+
+Gas_Viscosity_Quin                               [v1.0,  11 April     2004]
+:::::   Viscosity of a real gas mixture - Method of Quinones et al. (2000)
+
+Hydrate_Dissociation_Heat                        [v1.5,  12 June      2014]
+:::::   Heat of dissociation of the CH4 hydrate pressure for a given temperature
+
+Wettability                                      [v1.25, 30 December  2012]
+:::::     Compute wettability properties (rel. permeability and capillary pressure) of hydrate-bearing system
+          Scale capillary pressures and adjust intrinsic permeability to account for the effect of solid phases (EPM models)
+          Adjust diffusion coefficients by the relative permeabilities
+
+Capillary_Pressure_2Phase                        [v1.0,  12 January   2007]
+:::::   2-phase capillary pressure as function of saturation
+
+Permeability_Factor                              [v1.0   04 January   2007]
+:::::     Compute the adjustment factor of intrinsic permeability due to solid phases (EPM models)
+
+Relative_Permability_2Phase                      [v1.0,  19 January   2007]
+:::::   2-phase relative permeability as a function of saturation (scalar version)
+
+Hydraulic_Property_Changes                       [v1.1   14 August    2009]
+:::::     Transient porosity and permeability as a function of P, T, stress and strain
+
+Mass_and_Energy_Balance                          [v1.1,  12 August    2009]
+:::::   Perform summary balances for volume, mass, and energy
+
+JACOBIAN_SetUp                                   [v1.5 , 22 November  2013]
+:::::   Assemble all accumulation and flow terms; Populate the Jacobian matrix - Hydrate-bearing system
+
+SourceSink_Equation_Terms                        [v1.0,  18 November  2006]
+:::::   Assembling all source and sink terms in the equations (generic version)
+        Rigorous  step rate capability for MOP(12) = 2, and capability for flowing wellbore pressure corrections
+
+Source_Phase_EnthComp                            [v1.0,  27 April     2007]
+:::::   Determine phase composition and enthalpy of source fluid
+
+Thermal_Conductivity_HydrateBM                   [v1.25, 30 December  2012]
+:::::   Composite thermal conductivity of a hydrate-bearing porous medium
+
+H2O_Thermal_Conductivity                         [v1.0, 30 October   2014]
+:::::   Calculate the H2O fluid (liquid or vapor) thermal conductivity using the IAPWS (2011) formulation (scalar)
+
+CPU_Elapsed_Time                                 [v1.0,  15 February  2007]
+:::::   Compute elapsed CPU time
+
+Solve_Jacobian_Matrix_Equation                   [v1.0   24 August    2007]
+:::::   Solves the Jacobian matrix equation through an interface with linear equation solvers 
+        Can call a direct solver or a package of conjugate gradient solvers
+
+Preprocessor_Memory_Allocation                   [v1.0,  27 April     2007]
+:::::   Allocate memory to arrays for matrix preprocessing
+
+Upon_Convergence_H                               [v2.0,  20 October   2013]
+:::::   Update primary variables and select timestep after convergence of the NI iterations (hydrate-specific)
+
+Tabulate_Time_Series_Data                        [v1.5,  15 August    2015]
+:::::   Tabulate element, connection, and generation data vs. time for plotting in a hydrate system
+
+Print_Standard_Output                            [v1.1,  15 August    2009]
+:::::   Print results for elements, connections, and sinks & sources in the standard TOUGH+ output file
+
+Write_File_SAVE                                  [v1.50, 15 November  2013]
+:::::   At the completion of a TOUGH+ run, write primary variables into file "SAVE"

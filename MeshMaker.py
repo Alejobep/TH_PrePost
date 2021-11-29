@@ -1,10 +1,12 @@
 
 
-def RunMeshMaker(file_path):
+def RunMeshMaker(file_path, mm_path = 'path_to_MESHMAKER_executable'):
     import subprocess
     import os
     print("Run MESHMAKER")    
-    mm_path= r'"/mnt/c/Users/gpb/OneDrive - Equinor/ET/GasHydrates/TOUGH/MeshMaker/MeshMaker/Executable_MeshMaker/MM_LNX.bin"'
+    
+    if mm_path == r'path_to_MESHMAKER_executable':
+        print('Run function as RunMeshMaker(file, th_path = <correct path to MeshMaker executable>)')
     
     start_cwd = os.getcwd()
 

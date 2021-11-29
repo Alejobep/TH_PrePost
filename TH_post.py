@@ -14,8 +14,9 @@ def read_in_chunks(f,chunk_size):
         yield chunk
 
 #%%Processing functions
-def read_Time_Series(path,t='days',P='Pa'):
+def read_Time_Series(path):
 
+    old_cwd = os.getcwd()
 
     if os.path.isdir(path):
         folder = path
@@ -24,47 +25,45 @@ def read_Time_Series(path,t='days',P='Pa'):
 
     os.chdir(folder)
 
+
+    interfs=dict()
+    subdoms=dict()
+    ss_groups=dict()
+
+
     for f in os.listdir():
-        if r'Time_Series' in f:
+        if r'Time_Series' in f or r'Hydrate_Status' in f:
             with open(f) as ts_file:
                 first_line = ts_file.readline()
 
+
             ts_df = pd.read_fwf(f,skiprows = 1)
-
-            if t == 'h':
-                ts_df['Time [days]']*=24
-
-                ts_df = ts_df.rename(columns = {'Time [days]':'Time [h]'})
-
-            if P == 'bar':
-                ts_df['P[Pa]']/=1e5 
-                
-                ts_df = ts_df.rename(columns = {'P[Pa]':'P[bar]'})
-                
 
             name = f[:-12]
 
             if 'Subdomain' in first_line:
-                try:
-                    subdoms[name] = ts_df
+                subdoms[name] = ts_df
 
-                except:
-                    subdoms=dict()
-                    subdoms[name] = ts_df
-                
+            elif 'Interface' in first_line:
+                interfs[name] = ts_df
 
-            if 'Interface' in first_line:
-                try:
-                    interfs[name] = ts_df
+            elif 'SSGroup' in first_line:
+                ss_groups[name] = ts_df
 
-                except:
-                    interfs=dict()
-                    interfs[name] = ts_df
+            else:
+                hydrate_status = pd.read_fwf(f)
 
-    return subdoms, interfs
+
+    print('{:d} subdomain(s)\n{:d} interface(s)\n1 Hydrate_Status file\n{:d} source/sink group(s)'.format(len(subdoms.keys()), len(interfs.keys()), len(ss_groups.keys())))
+    os.chdir(old_cwd)
+
+    return subdoms, interfs, hydrate_status, ss_groups
             
 
 
+    
+    
+    
 
 def ELEME_geometry(elem_data):
     #Remove raw column
@@ -396,577 +395,184 @@ def readPDE_file(path):
 
 
 
-def read_out_file(path):
-    import re
 
-    if os.path.isdir(path):
-        case = path
-    else:
-        case = os.path.dirname(path)
 
-    ip_data = read_TH_data(path)
-    diff = ip_data.MEMORY.processed['M_3']['binary_diffusion']
 
 
 
-    for file in os.listdir(case):
-        if file.endswith('.out'):
-            op_file = file
 
-    path = os.path.join(case, op_file)
-
-
-    #Retrieve indexes where tables are located in Output file
-    idxs=[]
-
-    txt_1 = r'TOTAL TIME'
-    txt_2 = r'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'
-    txt_3 = r'MASS FLOW RATES'
-
-    sep_str = [txt_1, txt_2, txt_3]
-
-    tb1_bool = False
-    test = []
-
-    ts = []
-
-    with open(path, 'r', encoding='latin') as f:
-
-        for idx,line in enumerate(f):
-
-            if any(text in line for text in sep_str):
-                counter=0
-                idxs.append(idx)
-
-    idxs = np.array(idxs)
-
-    #Sources/sinks flag
-    ss_flag = len(''.join(ip_data.GENER.raw).strip())>len('GENER')
-
-    if diff:
-        if ss_flag:
-            idxs = idxs.reshape((len(idxs)//6),6)
-        else:
-            idxs = idxs.reshape((len(idxs)//5),5)
-    else:
-        if ss_flag:
-            idxs = idxs.reshape((len(idxs)//4),4)
-        else:
-            idxs = idxs.reshape((len(idxs)//4),4)
-
-
-
-
-    #Read time steps and headers
-    with open(path, 'r', encoding='latin') as f:
-
-        for idx,line in enumerate(f):
-            if idx in idxs[:,0]+1:
-                ts.append(float(line[:20]))
-
-            if idx == idxs[0,0]+6:
-                line = line.replace('S_Hydrate', 'S_hyd')
-                line = line.replace('S_aqueous', 'S_aqu')
-                line = line.replace('S_Ice', 'S_icd')
-                line = line.replace('Pressure', 'P')
-                line = line.replace('Temperature', 'T')
-                line = line.replace('X_Inhibitor', 'X_inh')
-                tb1_header = line.split()
-
-            if idx == idxs[0,1]+8:
-                line = line.replace('Phi', 'porosity')
-                line = line.replace('PC_w', 'P_cap')
-                tb2_header = line.split()
-
-            if idx == idxs[0,2]+8:
-                tb3_header = line
-
-            if diff and idx == idxs[0,3]+2:
-                tb4_header = line
-
-    ts = np.array(ts)
-
-
-    tb3_header = tb3_header.strip()
-
-
-    tb3_header=re.sub('[\s]{2,}','*', tb3_header)
-    tb3_header=re.sub('Flo CH4','Flo*CH4', tb3_header)
-    tb3_header=re.sub('[\s]','_', tb3_header)
-    tb3_header=tb3_header.split('*')
-
-    if diff:
-        tb4_header = tb4_header.strip()
-        tb4_header = tb4_header.split()
-        tb4_header = tb4_header[:2]+tb4_header[3::2]
-        tb4_header[2]+='_CH4'
-        tb4_header[3]+='_H20'
-        tb4_header[4]+='_NaCl'
-
-    #Get clean indexes that mark first and last lines of tables   
-    clean_idxs = np.zeros((idxs.shape[0],idxs.shape[1]+idxs.shape[1]-2))
-    clean_idxs[:,0] = idxs[:,0]+10
-    clean_idxs[:,1] = idxs[:,1]-1
-
-    clean_idxs[:,2] = idxs[:,1]+12
-    clean_idxs[:,3] = idxs[:,2]-1
-
-    clean_idxs[:,4] = idxs[:,2]+12
-    clean_idxs[:,5] = idxs[:,3]-1
-
-    if diff:
-        clean_idxs[:,5] = idxs[:,3]-4
-        clean_idxs[:,6] = idxs[:,3]+4
-        clean_idxs[:,7] = idxs[:,4]-2
-
-    clean_idxs = clean_idxs.astype(int)   
-
-
-    #Extract tables
-    def tb_logic(index):
-        for col in range(clean_idxs.shape[1]//2):
-            tb_idx = clean_idxs[:,col*2:col*2+2]
-
-            if any(index>=idx[0] and index<idx[1] for idx in tb_idx):
-                return False
-
-        return True
-
-    tb = pd.read_csv(path, skiprows= lambda x: tb_logic(x), names = ['raw'])
-
-    tb_sizes = np.diff(clean_idxs, axis=1)[0,::2]
-    chunk_size = tb_sizes.sum()
-
-    idx_list = tb.index.values
-    eval_list = idx_list-chunk_size*(idx_list//chunk_size)
-    tb1 = tb.iloc[eval_list<tb_sizes.cumsum()[0]].copy()
-    tb2 = tb.iloc[(eval_list>=tb_sizes.cumsum()[0]) & (eval_list<tb_sizes.cumsum()[1])].copy()
-    tb3 = tb.iloc[(eval_list>=tb_sizes.cumsum()[1]) & (eval_list<tb_sizes.cumsum()[2])].copy()
-    if diff:
-        tb4 = tb.iloc[(eval_list>=tb_sizes.cumsum()[2]) & (eval_list<tb_sizes.cumsum()[3])].copy()
-
-
-    #Parse tables    
-    tb1 = tb1['raw'].str.split(expand=True)
-    tb1 = tb1.rename(columns=dict(zip(tb1.columns.values, tb1_header)))
-
-    for j, col in tb1.iteritems():
-        query = (col.str.contains("[0-9][-][0-9]|[0-9][+][0-9]"))
-        col.loc[query] = col.loc[query].str[:-4]+'E'+col.loc[query].str[-4:]
-
-
-    tb1 = tb1.astype(dict(zip(tb1_header, ['str', 'int32']+['float64']*(len(tb1_header)-2))))
-
-    tb2 = tb2['raw'].str.split(expand=True)
-    tb2 = tb2.rename(columns=dict(zip(tb2.columns.values, tb2_header)))
-    for j, col in tb2.iteritems():
-        query = (col.str.contains("[0-9][-][0-9]|[0-9][+][0-9]"))
-        col.loc[query] = col.loc[query].str[:-4]+'E'+col.loc[query].str[-4:]
-
-    tb2 = tb2.astype(dict(zip(tb2_header, ['str', 'int32']+['float64']*(len(tb2_header)-2))))
-
-    tb3 = tb3['raw'].str.split(expand=True)
-    tb3 = tb3.rename(columns=dict(zip(tb3.columns.values, tb3_header)))
-    for j, col in tb3.iteritems():
-        query = (col.str.contains("[0-9][-][0-9]|[0-9][+][0-9]"))
-        col.loc[query] = col.loc[query].str[:-4]+'E'+col.loc[query].str[-4:]
-
-    tb3 = tb3.astype(dict(zip(tb3_header, ['str', 'str']+['float64']*(len(tb3_header)-2))))
-
-    if diff:
-        tb4 = tb4['raw'].str.split(expand=True)
-        tb4 = tb4.rename(columns=dict(zip(tb4.columns.values, tb4_header)))
-        for j, col in tb4.iteritems():
-            query = (col.str.contains('\-|\+')) & (~col.str.contains('E'))
-            col.loc[query] = col.loc[query].str[:-4]+'E'+col.loc[query].str[-4:]
-        tb4 = tb4.astype(dict(zip(tb4_header, ['str', 'str']+['float64']*(len(tb4_header)-2))))
-
-
-    #Drop repeated columns
-    tb1 = tb1.drop(columns='INDEX')
-    tb1 = tb1.reset_index(drop=True)
-
-    tb2 = tb2.drop(columns=['ELEM', 'INDEX'])
-    tb2 = tb2.reset_index(drop=True)
-
-    tb3 = tb3.reset_index(drop=True)
-
-    if diff:
-        tb4 = tb4.drop(columns=['ELEM1', 'ELEM2'])
-        tb4 = tb4.reset_index(drop=True)
-
-
-    #Produce final tables
-    data_grid = pd.concat([tb1,tb2], axis=1)
-
-    if diff:
-        data_conne = pd.concat([tb3,tb4], axis=1)
-    else:
-        data_conne = tb3
-
-    #Clean ELEM column    
-    data_grid['ELEM'] = data_grid['ELEM'].str.strip().str.strip('*')
-
-    #Retrieve grid dimensions
-    eleme = ip_data.ELEME.processed
-    eleme = eleme.set_index('ElName')
-
-    Tdim = len(eleme)
-    Cdim = len(ip_data.CONNE.processed)
-
-    time_grid = np.repeat(ts, Tdim)
-    time_conne = np.repeat(ts, Cdim)
-
-    MA12 = eleme.loc[data_grid['ELEM'], 'MA12'].values
-
-
-    data_grid['time'] = time_grid
-    data_conne['time'] = time_conne
-    data_grid['MA12'] = MA12
-
-    data_grid['x'] = eleme.loc[data_grid.ELEM, 'X'].values
-    data_grid['y'] = eleme.loc[data_grid.ELEM, 'Y'].values
-    data_grid['z'] = eleme.loc[data_grid.ELEM, 'Z'].values
-
-    data_grid = data_grid.sort_values(by=['time','x','y','z'], ascending=[True,True,True,False])
-
-    data_grid = data_grid.rename(columns={'ELEM': 'ElName'})
-
-    data_grid = data_grid.set_index(['time', 'ElName'])
-
-    data_conne = data_conne.rename_axis('C_IDX')
-
-
-
-    return data_grid, data_conne
-
-
-def tile_out_file(files_df):
-
-    for idx,row in files_df.iterrows():
-
-        try:
-            iter_path = os.path.join(row.Name, fname)
-            tdata_gr, tdata_conne = read_out_file(iter_path)
-
-            min_t = tdata_gr.index.get_level_values(0).min()
-
-            files_df.loc[idx,'t_min'] = min_t
-            try:
-                merged_gr = pd.concat([merged_gr,tdata_gr], sort = False)
-                merged_conne = pd.concat([merged_conne,tdata_conne], sort = False)
-
-            except:
-                merged_gr = pd.concat([tdata_gr], sort = False)
-                merged_conne = pd.concat([tdata_conne], sort = False)
-
-            print(idx, row.Name)
-            last_file = row.Name
-
-
-        except:
-            print('Last file processed:',last_file)
-            continue
-
-
-    return merged_gr, merged_conne
-
-
-
-def get_output(*file):
+def get_output(*file, write=False):
     """
     Reads initialization parameters
     Process Plot_Data_Elem
     Returns a dataframe with both initialization and input
     """
 
+
     if len(file)==1:
-        print("Processing single file")
-
-        data = read_TH_data(file[0])
-        mesh = process_init(file[0])
-        tdata = readPDE_file(file[0])
-
         pklpath = os.path.dirname(file[0])
 
-        
-
     else:
-        print("Processing multiple files")        
-        n_files = len(file)
-        sorted_files = pd.DataFrame(index = range(n_files), columns=('Name','t_min','ctime'))
-        
-        sorted_files['Name']=file
-        sorted_files['ctime']=sorted_files.Name.map(os.path.getctime)
-
-        sorted_files = sorted_files.sort_values(by='Name')
-    
-        
-        for idx,row in sorted_files.iterrows():
-            
-            try:
-                tdata = readPDE_file(row.Name)
-
-                min_t = tdata.index.get_level_values(0).min()
-                
-                sorted_files.loc[idx,'t_min'] = min_t
-                try:
-                    merged = pd.concat([merged,tdata], sort = False)
-                
-                except:
-                    merged = pd.concat([tdata], sort = False)
-
-                # print(idx, row.Name)
-                last_file = row.Name
-
-           
-            except:
-                print('Last file processed:',last_file)
-                continue
-
-        
-        tdata = merged
-                
-        sorted_files = sorted_files.sort_values(by='t_min')
-        
-        sorted_files = sorted_files.reset_index()   
-
-        # for f_idx, f_row in sorted_files.iterrows():
-        #     print('iteration No. {:d}. {:s}'.format(f_idx,f_row['Name']))
-
-
-        file_0 = sorted_files.loc[0,'Name']
-        mesh = process_init(file_0)
-        data = read_TH_data(file_0)
-
         pklpath = os.path.dirname(os.path.dirname(file[0]))
 
 
-    tsteps = tdata.index.get_level_values(0).drop_duplicates()
-    t1 = tsteps[0]
+    pklfile = os.path.join(pklpath,'GRID_data.pkl')
 
-    print(len(tsteps),'steps')
+    pkl_flag = False
+    if os.path.isfile(pklfile):
+        pkl_flag = True
+        
+    
+    if pkl_flag:
+        print('Read pickle data')
+        full_tdata = pd.read_pickle(pklfile)
 
-    tdata_0 = tdata.loc[t1].copy()
-    tdata_0.iloc[:,3:] = np.nan
+    else:
+        print('No pickle data available. Read and process')
 
-    #Set porosity and permeability from ROCKS
-    rocks = data.ROCKS.processed
-    rocks = rocks.set_index('Name')
+        if len(file)==1:
+            print("Processing single file")
 
-    #Reindex INCON mesh to ELNAme
-    mesh = mesh.set_index('ElName')
+            data = read_TH_data(file[0])
+            mesh = process_init(file[0])
+            tdata = readPDE_file(file[0])
 
-    tdata_0.porosity = rocks.loc[mesh.MA12,'Poros'].values
-    tdata_0.perm_abs = rocks.loc[mesh.MA12,'Perm1'].values 
+            pklpath = os.path.dirname(file[0])
 
-    tdata_0.loc[:,['MA12','P','T','S_hyd','S_gas','S_aqu','S_icd','X_inh']]=mesh[['MA12','P','T','S_hyd','S_gas','S_aqu','S_icd','X_inh']]
+            
 
-    #Append 1st time step and create new multi-Index
-    tsteps = np.append(0,tsteps)
+        else:
+            print("Processing multiple files")        
+            n_files = len(file)
+            sorted_files = pd.DataFrame(index = range(n_files), columns=('Name','t_min','ctime'))
+            
+            sorted_files['Name']=file
+            sorted_files['ctime']=sorted_files.Name.map(os.path.getctime)
 
-    MI_iterables = [tsteps,tdata_0.index]
-    df_MIndex = pd.MultiIndex.from_product(MI_iterables, names=['time', 'ElName'])
+            sorted_files = sorted_files.sort_values(by='Name')
+        
+            
+            for idx,row in sorted_files.iterrows():
+                
+                try:
+                    tdata = readPDE_file(row.Name)
 
-    #Concatenate
+                    min_t = tdata.index.get_level_values(0).min()
+                    
+                    sorted_files.loc[idx,'t_min'] = min_t
+                    try:
+                        merged = pd.concat([merged,tdata], sort = False)
+                    
+                    except:
+                        merged = pd.concat([tdata], sort = False)
 
-    full_tdata = pd.concat([tdata_0,tdata])
-    full_tdata = full_tdata.set_index(df_MIndex)
+                    # print(idx, row.Name)
+                    last_file = row.Name
 
-    full_tdata['I'] = np.tile(mesh.I.values, len(tsteps))
-    full_tdata['J'] = np.tile(mesh.J.values, len(tsteps))
-    full_tdata['K'] = np.tile(mesh.K.values, len(tsteps))
-    full_tdata['dx'] = np.tile(mesh.dX.values, len(tsteps))
-    full_tdata['dy'] = np.tile(mesh.dY.values, len(tsteps))
-    full_tdata['dz'] = np.tile(mesh.dZ.values, len(tsteps))
+            
+                except:
+                    print('Last file processed:',last_file)
+                    continue
 
+            
+            tdata = merged
+                    
+            sorted_files = sorted_files.sort_values(by='t_min')
+            
+            sorted_files = sorted_files.reset_index()   
 
-
-    #Reorganize columns
-    cols = full_tdata.columns.to_list()
-    cols = cols[:3]+cols[17:]+cols[16:17]+cols[3:16]
-    full_tdata = full_tdata[cols]
-
-    #Change dtypes to float
-    float_cols = cols[:3]+cols[10:]
-    dtype_dict = dict(zip(float_cols,['float']*len(float_cols)))
-    full_tdata = full_tdata.astype(dtype_dict)
-
-    #Convert P from Pa to bar
-    full_tdata['P'] /= 1e5
-    full_tdata['P_cap'] /= 1e5
-
-
-    #Calculate Phase Pressures
-    full_tdata['P_aqu'] = full_tdata['P'] + full_tdata['P_cap']
-
-    #Convert permeability from m2 to mD
-    full_tdata['perm_abs'] *= 1013249965828144.8
+            # for f_idx, f_row in sorted_files.iterrows():
+            #     print('iteration No. {:d}. {:s}'.format(f_idx,f_row['Name']))
 
 
-    #Reset index to time only
-    full_tdata = full_tdata.reset_index(level=[1])
+            file_0 = sorted_files.loc[0,'Name']
+            mesh = process_init(file_0)
+            data = read_TH_data(file_0)
 
-    full_tdata.to_pickle(os.path.join(pklpath,'GRID_data.pkl'))
+            pklpath = os.path.dirname(os.path.dirname(file[0]))
+
+
+        tsteps = tdata.index.get_level_values(0).drop_duplicates()
+        t1 = tsteps[0]
+
+        print(len(tsteps),'steps')
+
+        tdata_0 = tdata.loc[t1].copy()
+        tdata_0.iloc[:,3:] = np.nan
+
+        #Set porosity and permeability from ROCKS
+        rocks = data.ROCKS.processed
+        rocks = rocks.set_index('Name')
+
+        #Reindex INCON mesh to ELNAme
+        mesh = mesh.set_index('ElName')
+        
+        try:
+            eleme_rock_idx = pd.to_numeric(mesh.MA12)
+            print('Rocks referenced in ELEME as indexes')
+            tdata_0.porosity = rocks.iloc[1-eleme_rock_idx.values]['Poros'].values
+            tdata_0.perm_abs = rocks.iloc[1-eleme_rock_idx.values]['Poros'].values
+            
+        except:
+            print('Rocks referenced as string names')
+            tdata_0.porosity = rocks.loc[mesh.MA12,'Poros'].values
+            tdata_0.perm_abs = rocks.loc[mesh.MA12,'Perm1'].values 
+
+        tdata_0.loc[:,['MA12','P','T','S_hyd','S_gas','S_aqu','S_icd','X_inh']]=mesh[['MA12','P','T','S_hyd','S_gas','S_aqu','S_icd','X_inh']]
+
+        #Append 1st time step and create new multi-Index
+        tsteps = np.append(0,tsteps)
+
+        MI_iterables = [tsteps,tdata_0.index]
+        df_MIndex = pd.MultiIndex.from_product(MI_iterables, names=['time', 'ElName'])
+
+        #Concatenate
+
+        full_tdata = pd.concat([tdata_0,tdata])
+        full_tdata = full_tdata.set_index(df_MIndex)
+
+        full_tdata['I'] = np.tile(mesh.I.values, len(tsteps))
+        full_tdata['J'] = np.tile(mesh.J.values, len(tsteps))
+        full_tdata['K'] = np.tile(mesh.K.values, len(tsteps))
+        full_tdata['dx'] = np.tile(mesh.dX.values, len(tsteps))
+        full_tdata['dy'] = np.tile(mesh.dY.values, len(tsteps))
+        full_tdata['dz'] = np.tile(mesh.dZ.values, len(tsteps))
+
+
+
+        #Reorganize columns
+        cols = full_tdata.columns.to_list()
+        cols = cols[:3]+cols[17:]+cols[16:17]+cols[3:16]
+        full_tdata = full_tdata[cols]
+
+        #Change dtypes to float
+        float_cols = cols[:3]+cols[10:]
+        dtype_dict = dict(zip(float_cols,['float']*len(float_cols)))
+        full_tdata = full_tdata.astype(dtype_dict)
+
+        #Convert P from Pa to bar
+        full_tdata['P'] /= 1e5
+        full_tdata['P_cap'] /= 1e5
+
+
+        #Calculate Phase Pressures
+        full_tdata['P_aqu'] = full_tdata['P'] + full_tdata['P_cap']
+
+        #Convert permeability from m2 to mD
+        full_tdata['perm_abs'] *= 1013249965828144.8
+
+
+        #Reset index to time only
+        full_tdata = full_tdata.reset_index(level=[1])
+        
+        if write:
+            pkl_file = os.path.join(pklpath,'GRID_data.pkl')
+            print('storing data into pickle file: {:s}'.format(pkl_file))
+
+            full_tdata.to_pickle(pkl_file)
 
 
     return full_tdata
-
-
-
-def get_output_full(*file):
-    """
-    Reads initialization parameters
-    Process .out file
-    Returns a dataframe with both initialization and input
-    """
-
-    if len(file)==1:
-        print("Processing single file")
-
-        data = read_TH_data(file[0])
-        mesh = process_init(file[0])
-        tdata_gr, tdata_conne = read_out_file(file[0])
-
-        pklpath = os.path.dirname(file[0])
-
-    else:
-        print("Processing multiple files")        
-        n_files = len(file)
-        sorted_files = pd.DataFrame(index = range(n_files), columns=('Name','t_min','ctime'))
-        
-        sorted_files['Name']=file
-        sorted_files['ctime']=sorted_files.Name.map(os.path.getctime)
-
-        sorted_files = sorted_files.sort_values(by='ctime')
-    
-        
-        for idx,row in sorted_files.iterrows():
-            
-            try:
-                tdata_gr, tdata_conne = read_out_file(row.Name)
-
-                min_t = tdata_gr.index.get_level_values(0).min()
-                
-                sorted_files.loc[idx,'t_min'] = min_t
-                try:
-                    merged_gr = pd.concat([merged_gr,tdata_gr], sort = False)
-                    merged_conne = pd.concat([merged_conne,tdata_conne], sort = False)
-                
-                except:
-                    merged_gr = pd.concat([tdata_gr], sort = False)
-                    merged_conne = pd.concat([tdata_conne], sort = False)
-
-                # print(idx, row.Name)
-                last_file = row.Name
-
-           
-            except:
-                print('Last file processed:',last_file)
-                continue
-
-        
-        tdata_gr = merged_gr
-        tdata_conne = merged_conne
-                
-        sorted_files = sorted_files.sort_values(by='t_min')
-        
-        sorted_files = sorted_files.reset_index()   
-
-        # for f_idx, f_row in sorted_files.iterrows():
-        #     print('iteration No. {:d}. {:s}'.format(f_idx,f_row['Name']))
-
-
-        file_0 = sorted_files.loc[0,'Name']
-        mesh = process_init(file_0)
-        data = read_TH_data(file_0)
-
-        pklpath = os.path.dirname(os.path.dirname(file[0]))
-
-
-
-    tsteps = tdata_gr.index.get_level_values(0).drop_duplicates()
-    t1 = tsteps[0]
-
-    tdata_gr_0 = tdata_gr.loc[t1].copy()
-    tdata_gr_0.iloc[:,3:] = np.nan
-    tdata_gr_0[['x', 'y', 'z']] = tdata_gr.loc[t1, ['x', 'y', 'z']]
-
-
-    
-
-    #Set porosity and permeability from ROCKS
-    rocks = data.ROCKS.processed
-    rocks = rocks.set_index('Name')
-
-    #Reindex INCON mesh to ELNAme
-    mesh = mesh.set_index('ElName')
-
-#     tdata_gr_0.porosity = rocks.loc[mesh.MA12,'Poros'].values
-#     tdata_gr_0['perm_abs'] = rocks.loc[mesh.MA12,'Perm1'].values 
-
-    tdata_gr_0.loc[:,['P','T','S_hyd','S_gas','S_aqu','S_icd','X_inh','MA12']]=mesh[['P','T','S_hyd','S_gas','S_aqu','S_icd','X_inh', 'MA12']]
-
-    #Append 1st time step and create new multi-Index
-    tsteps = np.append(0,tsteps)
-
-    print(len(tsteps),'steps')
-
-    MI_iterables = [tsteps,tdata_gr_0.index]
-    df_MIndex = pd.MultiIndex.from_product(MI_iterables, names=['time', 'ElName'])
-
-    #Concatenate
-    
-    
-    full_tdata_gr = pd.concat([tdata_gr_0,tdata_gr])
-    full_tdata_gr = full_tdata_gr.set_index(df_MIndex)
-
-    full_tdata_gr['I'] = np.tile(mesh.I.values, len(tsteps))
-    full_tdata_gr['J'] = np.tile(mesh.J.values, len(tsteps))
-    full_tdata_gr['K'] = np.tile(mesh.K.values, len(tsteps))
-    full_tdata_gr['dx'] = np.tile(mesh.dX.values, len(tsteps))
-    full_tdata_gr['dy'] = np.tile(mesh.dY.values, len(tsteps))
-    full_tdata_gr['dz'] = np.tile(mesh.dZ.values, len(tsteps))
-
-
-    # full_tdata_gr['MA12'] = np.tile(mesh.MA12.values, len(tsteps))
-
-    #Reorganize columns
-    cols = full_tdata_gr.columns.to_list()
-    
-    cols = cols[-10:]+cols[:-10]
-    cols = cols[1:10]+cols[:1]+cols[10:]
-    full_tdata_gr = full_tdata_gr[cols]
-
-#     #Change dtypes to float
-#     float_cols = cols[:3]+cols[10:]
-#     dtype_dict = dict(zip(float_cols,['float']*len(float_cols)))
-#     full_tdata_gr = full_tdata_gr.astype(dtype_dict)
-
-    #Convert P from Pa to bar
-    full_tdata_gr['P'] /= 1e5
-    full_tdata_gr['P_CH4'] /= 1e5
-    full_tdata_gr['P_EqHydr'] /= 1e5
-    full_tdata_gr['P_SatWat'] /= 1e5
-    full_tdata_gr['P_cap'] /= 1e5
-
-    full_tdata_gr = full_tdata_gr.rename(columns={"C-CH4inGas": "C_CH4inGas", "C-CH4inAqu": "C_CH4inAqu"})
-
-    #Reset index to time only
-    full_tdata_gr = full_tdata_gr.reset_index(level=[1])
-
-    full_tdata_gr.to_pickle(os.path.join(pklpath,'GRID_data_full.pkl'))
-    tdata_conne.to_pickle(os.path.join(pklpath,'CONNE_data.pkl'))
-
-    return full_tdata_gr
-
-
-
-
-
-   
-
-
 
 
 

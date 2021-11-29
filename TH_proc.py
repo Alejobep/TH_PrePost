@@ -1575,7 +1575,10 @@ def write_TH_data(data,file,ow=False):
         
         
 #%% Executable
-def RunTOUGH(file,th_path=r'"/mnt/c/Users/gpb/OneDrive - Equinor/ET/GasHydrates/TOUGH/T+Core_Hydrate_Source_v1.5/Executable_T+H/TH_lin64.bin"'):
+def RunTOUGH(file,th_path=r'path_to_TOUGH_executable'):
+    
+    if th_path == r'path_to_TOUGH_executable':
+        print('Run function as RunTOUGH(file, th_path = <correct path to executable>)')
 
     from subprocess import Popen,PIPE
     import os

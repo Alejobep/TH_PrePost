@@ -1,0 +1,68 @@
+  Memory allocation at point   0 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point   1 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point   2 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point   3 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point   4 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point   5 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point   6 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point   7 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point   8 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point   9 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point  10 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point  11 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point  12 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point  13 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point  14 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point  15 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point  16 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point  17 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point  18 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point  20 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point  21 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point  22 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point  23 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point  24 in subroutine "Core_Memory_Allocation" was successful
+  Memory allocation at point  25 in subroutine "Core_Memory_Allocation" was successful
+
+
+  Memory allocation at point  41 in subroutine "Allocate_Temp_Input_Memory" was successful
+  Memory allocation at point  42 in subroutine "Allocate_Temp_Input_Memory" was successful
+  Memory allocation at point  43 in subroutine "Allocate_Temp_Input_Memory" was successful
+  Memory allocation at point  44 in subroutine "Allocate_Temp_Input_Memory" was successful
+  Memory allocation at point  45 in subroutine "Allocate_Temp_Input_Memory" was successful
+  Memory allocation of <GPhase_Com> in subroutine <Read_Hydrate_Specific_Data> was successful
+  Memory allocation of <GH%p_ThC> in subroutine <Read_Hydrate_Specific_Data> was successful
+  Memory allocation of <GH%p_SpH> in subroutine <Read_Hydrate_Specific_Data> was successful
+  Memory deallocation at point  24 in subroutine <Read_Hydrate_Specific_Data> was successful
+ Memory allocation to array <temp_elem> in subroutine <Renumber_Elements> was successful
+ Memory deallocation to array <temp_elem> in subroutine <Renumber_Elements> was successful
+  Memory deallocation of array <emissivity> at point   9 in subroutine <Read_Connections_From_MESH> was successful
+
+
+  Memory allocation at point  26 in subroutine "Allocate_Solver_Memory" was successful
+  Memory allocation at point  27 in subroutine "Allocate_Solver_Memory" was successful
+  Memory allocation at point  28 in subroutine "Allocate_Solver_Memory" was successful
+  Memory allocation at point  29 in subroutine "Allocate_Solver_Memory" was successful
+  Memory allocation at point  30 in subroutine "Allocate_Solver_Memory" was successful
+
+
+  Memory deallocation at point  41 in subroutine "Deallocate_Unneeded_Arrays" was successful
+  Memory deallocation at point  42 in subroutine "Deallocate_Unneeded_Arrays" was successful
+  Memory deallocation at point  43 in subroutine "Deallocate_Unneeded_Arrays" was successful
+  Memory deallocation at point  44 in subroutine "Deallocate_Unneeded_Arrays" was successful
+  Memory deallocation at point  45 in subroutine "Deallocate_Unneeded_Arrays" was successful
+  Memory deallocation at point   2 in subroutine "Deallocate_Unneeded_Arrays" was successful
+  Memory deallocation at point   3 in subroutine "Deallocate_Unneeded_Arrays" was successful
+  Memory deallocation at point  24 in subroutine "Deallocate_Unneeded_Arrays" was successful
+
+
+  Memory allocation at point  31 in subroutine "Preprocessor_Memory_Allocation" was successful
+  Memory allocation at point  32 in subroutine "Preprocessor_Memory_Allocation" was successful
+  Memory allocation at point  33 in subroutine "Preprocessor_Memory_Allocation" was successful
+  Memory allocation at point  34 in subroutine "Preprocessor_Memory_Allocation" was successful
+  Memory allocation at point  35 in subroutine "Preprocessor_Memory_Allocation" was successful
+  Memory allocation at point  36 in subroutine "Preprocessor_Memory_Allocation" was successful
+  Memory allocation at point  37 in subroutine "Preprocessor_Memory_Allocation" was successful
+  Memory allocation at point  38 in subroutine "Preprocessor_Memory_Allocation" was successful
+  Memory allocation at point  39 in subroutine "Preprocessor_Memory_Allocation" was successful
+  Memory allocation at point  40 in subroutine "Preprocessor_Memory_Allocation" was successful
