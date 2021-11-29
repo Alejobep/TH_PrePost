@@ -10,4 +10,4 @@ Regarding the simulation files:
 - The input file needs to have the parameter MOP(19) set to 8. In this manner, it will produce an additional file containing the most important
 properties printed in a format suitable for plotting.
 
-As example, two simulation cases are included to use for testing.
+As example, three different simulation cases are included to use for testing.
