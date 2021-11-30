@@ -32,108 +32,6 @@ def palette(min_color,max_color):
     return plt
 
 
-def minmax(pmt, data):
-    from bokeh.models import LinearColorMapper
-    from bokeh.palettes import Viridis256
-
-
-
-    minv=data[pmt].min()
-    maxv=data[pmt].max()
-    fmt='0.0'
-    
-    
-    #Parameters that are unit fractions or multipliers [0,1]
-    fr_pmts=['S_hyd', 'S_aqu', 'S_gas', 'S_icd', 'k_rg', 'k_rw', 'k_adj_F']
-    
-    param_name={'P':'pressure [MPa]',
-                'T':'temperature [degC]',
-                'S_hyd':'hydrate sat. [V/V]',
-                'S_aqu':'water sat. [V/V]',
-                'S_gas':'gas sat. [V/V]',
-                'S_icd':'ice sat. [V/V]',
-                'X_inh':'salinity',
-                'k_rg':'gas rel. perm. [frac]',
-                'k_rw':'water rel. perm. [frac]',
-                'krg_h':'gas rel. perm. [frac]',
-                'krw_h':'water rel. perm. [frac]',
-                'k_adj_F':'perm adj. factor [frac]',
-                'perm_abs':'absolute perm. [mD]',
-                'k_eff':'eff. perm. [mD]',
-                'porosity':'porosity [frac]',
-                'phi_eff':'eff. porosity [frac]',
-                'P_cap':'capillay pres. [Pa]',
-                'P_aqu':'press. aqueous ph. [Pa]',
-                'ZONE':'zonation index'}
-    
-    try:
-        pmt_name=param_name[pmt]
-    except:
-        pmt_name='unnamed'
-            
-    if pmt in fr_pmts or minv-maxv==0:
-        minv=0
-        maxv=1
-        fmt='0.0'
-    
-    elif minv==0:
-        minv=0
-        
-        if np.log10(maxv-minv)<-16:
-            minv=0
-            maxv=1
-
-        
-    elif maxv==0:
-        
-        if minv==0:
-            maxv=0.5
-        
-        else:
-            maxv=0
-    
-    
-    else:
-        if maxv<0:
-            q_max=np.floor(np.log10(-maxv))-1
-        
-        elif maxv==0:
-            q_max=0
-        
-        else:
-            q_max=np.floor(np.log10(maxv))-1
-            
-        
-
-        if minv<0:
-            q_min=np.floor(np.log10(-minv))-1
-        elif minv==0:
-            q_min=0
-        else:
-            q_min=np.floor(np.log10(minv))-1
-        
-        
-        maxv=10**q_max * np.ceil(maxv/(10**q_max))
-
-        minv=10**q_min * np.floor(minv/10**q_min)
-
-        
-            
-    if pmt=='T' and minv>0:
-        minv=0
-        
-    # if pmt in ['perm_abs','k_eff']:
-
-    #     print('logarithmic colorbar')
-    #     cm=LogColorMapper(palette=Viridis256, low=minv, high=maxv)
-
-        
-    # else:
-    cm=LinearColorMapper(palette=Viridis256, low=minv, high=maxv)
-
-
-    return minv,maxv,pmt_name,cm
-
 
 def Equil_P(T_x,C=True):
     
@@ -257,4 +155,49 @@ def Tshift_NaCl(X_iA,Max_Tshift=2e0,Xmol_iA_atMax_Tshift=1.335e-2,InhibitorMW=5.
     
     return Tshift
 
+
 v_Tshift_NaCl=np.vectorize(Tshift_NaCl)
+
+
+#%% Executable
+def RunTOUGH(file,th_path=r'path_to_TOUGH_executable'):
+    
+    if th_path == r'path_to_TOUGH_executable':
+        print('Run function as RunTOUGH(file, th_path = <correct path to executable>)')
+
+    from subprocess import Popen,PIPE
+    import os
+    
+    wd=os.getcwd()
+    fd=os.path.dirname(file)
+    fname=os.path.basename(file)
+    
+    nd=os.path.join(wd,fd)
+    
+    old_wd = os.getcwd()
+
+    os.chdir(nd)
+    
+    op_files=os.listdir()
+    up_file=r'Parameter_Update_File'
+    
+    
+    
+    f_list = [fname,up_file,'.ipynb_checkpoints']    
+    for f in op_files:
+        if not f in f_list:
+            os.remove(f)
+    
+    
+    
+    file_in=fname
+    file_out=fname[:-2]+r'out'
+    cmd=th_path+r' <'+file_in+r'> '+file_out 
+    
+    print('Start simulation at '+os.path.basename(os.getcwd()))
+    # proc=Popen(cmd, stdout=PIPE, shell=True)
+    proc=Popen(cmd, stdout=PIPE, shell=True, preexec_fn=os.setpgrp)
+
+    os.chdir(old_wd)
+
+    return proc

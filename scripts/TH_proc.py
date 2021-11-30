@@ -1574,47 +1574,6 @@ def write_TH_data(data,file,ow=False):
         f.write(str_data)
         
         
-#%% Executable
-def RunTOUGH(file,th_path=r'path_to_TOUGH_executable'):
-    
-    if th_path == r'path_to_TOUGH_executable':
-        print('Run function as RunTOUGH(file, th_path = <correct path to executable>)')
 
-    from subprocess import Popen,PIPE
-    import os
-    
-    wd=os.getcwd()
-    fd=os.path.dirname(file)
-    fname=os.path.basename(file)
-    
-    nd=os.path.join(wd,fd)
-    
-    old_wd = os.getcwd()
-
-    os.chdir(nd)
-    
-    op_files=os.listdir()
-    up_file=r'Parameter_Update_File'
-    
-    
-    
-    f_list = [fname,up_file,'.ipynb_checkpoints']    
-    for f in op_files:
-        if not f in f_list:
-            os.remove(f)
-    
-    
-    
-    file_in=fname
-    file_out=fname[:-2]+r'out'
-    cmd=th_path+r' <'+file_in+r'> '+file_out 
-    
-    print('Start simulation at '+os.path.basename(os.getcwd()))
-    # proc=Popen(cmd, stdout=PIPE, shell=True)
-    proc=Popen(cmd, stdout=PIPE, shell=True, preexec_fn=os.setpgrp)
-
-    os.chdir(old_wd)
-
-    return proc
         
         
